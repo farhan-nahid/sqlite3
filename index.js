@@ -10,7 +10,7 @@ var db = new sqlite3.Database("./database/image.db");
 app.use(express.json());
 db.run("CREATE TABLE IF NOT EXISTS emp(id TEXT, image TEXT)");
 
-app.get("/", function (req, res) {
+app.get("/", function (_req, res) {
   res.json({ name: "Farhan Ahmed Nahid" });
 });
 
@@ -36,7 +36,7 @@ app.get("/image", function (req, res) {
   db.serialize(() => {
     db.each("SELECT id ID, image IMAGE FROM emp WHERE id =?", ["1"], function (err, row) {
       if (err) {
-        res.send("Error encountered while displaying");
+        res.json({ message: err.message });
       }
       if (row?.ID) {
         res.json({ message: "Success", id: row.ID, image: row.IMAGE });
@@ -54,8 +54,7 @@ app.put("/image/:id", async (req, res) => {
       [req.body.image, req.params.id],
       function (err) {
         if (err) {
-          res.send("Error encountered while updating");
-          return console.error(err.message);
+          res.json({ message: err.message });
         }
         res.json({ message: "Entry updated successfully" });
       }
@@ -67,11 +66,9 @@ app.delete("/image/:id", function (req, res) {
   db.serialize(() => {
     db.run("DELETE FROM emp WHERE id = ?", req.params.id, function (err) {
       if (err) {
-        res.send("Error encountered while deleting");
-        return console.error(err.message);
+        res.json({ message: err.message });
       }
-      res.send("Entry deleted");
-      console.log("Entry deleted");
+      res.json({ message: "Successfully Deleted" });
     });
   });
 });
