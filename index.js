@@ -1,11 +1,10 @@
-var sqlite3 = require("sqlite3").verbose();
-const { query } = require("express");
-var express = require("express");
-var http = require("http");
+const sqlite3 = require("sqlite3").verbose();
+const express = require("express");
+const http = require("http");
 
 const app = express();
-var server = http.createServer(app);
-var db = new sqlite3.Database("./database/image.db");
+const server = http.createServer(app);
+const db = new sqlite3.Database("./database/image.db");
 
 app.use(express.json());
 db.run("CREATE TABLE IF NOT EXISTS emp(id TEXT, image TEXT)");
@@ -15,7 +14,6 @@ app.get("/", function (_req, res) {
 });
 
 app.post("/image", function (req, res) {
-  console.log(req.body);
   db.serialize(() => {
     db.run(
       "INSERT INTO emp(id,image) VALUES(?,?)",
@@ -77,10 +75,9 @@ app.get("/close", function (req, res) {
   db.close((err) => {
     if (err) {
       res.send("There is some error in closing the database");
-      return console.error(err.message);
     }
-    console.log("Closing the database connection.");
-    res.send("Database connection successfully closed");
+
+    res.json({ message: "Database connection successfully closed" });
   });
 });
 
