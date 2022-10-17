@@ -8,50 +8,49 @@ var server = http.createServer(app);
 var db = new sqlite3.Database("./database/image.db");
 
 app.use(express.json());
-db.run("CREATE TABLE IF NOT EXISTS emp(id TEXT, name TEXT)");
+db.run("CREATE TABLE IF NOT EXISTS emp(id TEXT, image TEXT)");
 
 app.get("/", function (req, res) {
   res.json({ name: "Farhan Ahmed Nahid" });
 });
 
-app.post("/add", function (req, res) {
+app.post("/image", function (req, res) {
   console.log(req.body);
   db.serialize(() => {
     db.run(
-      "INSERT INTO emp(id,name) VALUES(?,?)",
+      "INSERT INTO emp(id,image) VALUES(?,?)",
       [req.body.id, req.body.image],
       function (err) {
         if (err) {
-          return console.log(err.message);
+          return res.json({ message: err.message });
         }
-        console.log("New employee has been added");
-        res.json({ id: req.body.id, image: req.body.image });
+
+        res.statusCode = 201;
+        res.json({ message: "Image successfully added" });
       }
     );
   });
 });
 
-app.get("/view/:id", function (req, res) {
+app.get("/image", function (req, res) {
   db.serialize(() => {
-    db.each(
-      "SELECT id ID, name NAME FROM emp WHERE id =?",
-      [req.params.id],
-      function (err, row) {
-        console.log(row);
-        if (err) {
-          res.send("Error encountered while displaying");
-          return console.error(err.message);
-        }
-        res.json({ message: "Success", id: row.ID, image: row.NAME });
+    db.each("SELECT id ID, image IMAGE FROM emp WHERE id =?", ["1"], function (err, row) {
+      if (err) {
+        res.send("Error encountered while displaying");
       }
-    );
+      if (row?.ID) {
+        res.json({ message: "Success", id: row.ID, image: row.IMAGE });
+      }
+      res.statusCode = 400;
+      res.json({ message: "Data not found" });
+    });
   });
 });
 
-app.put("/update/:id", async (req, res) => {
+app.put("/image/:id", async (req, res) => {
   db.serialize(() => {
     db.run(
-      "UPDATE emp SET name = ? WHERE id = ?",
+      "UPDATE emp SET image = ? WHERE id = ?",
       [req.body.image, req.params.id],
       function (err) {
         if (err) {
@@ -59,13 +58,12 @@ app.put("/update/:id", async (req, res) => {
           return console.error(err.message);
         }
         res.json({ message: "Entry updated successfully" });
-        console.log("Entry updated successfully");
       }
     );
   });
 });
 
-app.get("/del/:id", function (req, res) {
+app.delete("/image/:id", function (req, res) {
   db.serialize(() => {
     db.run("DELETE FROM emp WHERE id = ?", req.params.id, function (err) {
       if (err) {
